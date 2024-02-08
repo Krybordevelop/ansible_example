@@ -1,0 +1,42 @@
+---
+- name: Install Jenkins
+  hosts: leader
+  become: true
+
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+
+    - name: Install fontconfig and OpenJDK 17 JRE
+      apt:
+        name:
+          - fontconfig
+          - openjdk-17-jre
+        state: present
+
+    - name: Download Jenkins GPG key
+      shell: wget -O /usr/share/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian/jenkins.io-2023.key
+
+    - name: Add Jenkins repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/"
+        state: present
+
+    - name: Update package cache for Jenkins repository
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+    
+    - name: Display content of initialAdminPassword file
+      shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+      register: admin_password
+
+    - name: Show the access text
+      debug:
+        var: admin_password.stdout_lines
