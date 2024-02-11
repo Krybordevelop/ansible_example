@@ -1,0 +1,52 @@
+---
+- name: Configure and install PostgreSQL
+  hosts: all
+  become: true
+  
+  vars_prompt:
+    - name: include_optional_role
+      prompt: "Do you want to include the optional role? (yes/no)"
+      private: no  # If you set this to yes, the input will not be echoe
+
+  pre_tasks:
+    - name: Create PostgreSQL repository configuration
+      shell: echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+    - name: Import the repository signing key
+      shell: wget --quiet -O - "{{ postgresql_repo_key_url }}" | apt-key add -
+
+    - name: Update package lists
+      apt:
+        update_cache: yes
+
+    - name: Install the "{{ postgresql_package_name }}"
+      apt:
+        name:
+        - "{{ postgresql_package_name }}"
+        update_cache: yes
+
+    - name: import main config
+      template:
+        src: templates/postgresql.conf.j2
+        dest: "/etc/postgresql/{{ postgresql_package_version }}/main/postgresql.conf"
+      notify: Restart PostgreSQL service
+
+    - name: import pg_hba config
+      template:
+        src: templates/pg_hba.conf.j2
+        dest: "/etc/postgresql/{{ postgresql_package_version }}/main/pg_hba.conf"
+      notify: Restart PostgreSQL service
+
+  tasks:
+    - name: Include Optional Role
+      when: include_optional_role|lower == 'yes'
+      include_role:
+        name: create_user_and_db
+
+  handlers:
+    - name: Restart PostgreSQL service
+      systemd:
+        name: postgresql
+        state: restarted
+
+

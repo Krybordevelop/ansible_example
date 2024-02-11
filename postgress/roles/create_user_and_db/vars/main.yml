@@ -1,0 +1,6 @@
+  postgres_user: "admin"
+  postgres_password: "12345678"
+  postgres_db: "testdb"
+  postgres_encoding: UTF8
+  postgres_collation: en_US.UTF-8
+  postgres_lc_ctype: en_US.UTF-8
