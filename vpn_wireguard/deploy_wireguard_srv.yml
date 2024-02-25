@@ -1,0 +1,25 @@
+---
+- name: Install WireGuard srv
+  hosts: ваш_хост
+  become: yes
+
+  tasks:
+    - name: Update server
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: install WireGuard
+      apt:
+        name: wireguard
+        state: present
+
+    - name:  gen key
+      shell:
+        cmd: "wg genkey | tee /etc/wireguard/privatekey | wg pubkey | tee /etc/wireguard/publickey"
+        creates: /etc/wireguard/privatekey
+
+    - name: right for private key
+      file:
+        path: /etc/wireguard/privatekey
+        mode: '0600'
