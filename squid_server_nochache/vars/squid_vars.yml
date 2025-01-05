@@ -1,0 +1,5 @@
+squid_conf_path: /etc/squid/squid.conf
+squid_auth_path: /etc/squid/passwd
+proxy_port: 3128
+auth_user: proxyuser
+auth_password: proxypass

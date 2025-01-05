@@ -1,0 +1,34 @@
+# Custom Squid Configuration
+
+# No cache settings
+cache deny all
+
+# Enable authentication
+auth_param basic program /usr/lib/squid/basic_ncsa_auth /etc/squid/passwd
+auth_param basic children 5
+auth_param basic realm Squid proxy-caching web server
+auth_param basic credentialsttl 2 hours
+acl authenticated proxy_auth REQUIRED
+http_access allow authenticated
+
+# Allow localhost
+acl localhost src 127.0.0.1/32
+http_access allow localhost
+
+# Safe ports and SSL ports
+acl SSL_ports port 443
+acl Safe_ports port 80
+acl Safe_ports port 443
+acl Safe_ports port 21
+acl Safe_ports port 1025-65535
+http_access deny !Safe_ports
+http_access deny CONNECT !SSL_ports
+
+# Deny all other traffic
+http_access deny all
+
+# Listening port
+http_port 3128
+
+# Cache directory
+coredump_dir /var/spool/squid
