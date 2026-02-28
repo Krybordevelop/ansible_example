@@ -1,0 +1,3 @@
+postgresql_package_name: "postgresql-16"
+postgresql_package_version: "16"
+postgres_db: "testdb"
