@@ -6,7 +6,7 @@
   vars_prompt:
     - name: include_optional_role
       prompt: "Do you want to include the optional role? (yes/no)"
-      private: no  # If you set this to yes, the input will not be echoe
+      private: no
 
   pre_tasks:
     - name: Create PostgreSQL repository configuration
