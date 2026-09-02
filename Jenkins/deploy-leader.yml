@@ -16,11 +16,15 @@
         state: present
 
     - name: Download Jenkins GPG key
-      ansible.builtin.shell: wget -O /usr/share/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian/jenkins.io-2023.key
+      ansible.builtin.get_url:
+        url: https://pkg.jenkins.io/debian/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+        mode: '0644'
 
     - name: Add Jenkins repository
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/"
+        repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+          https://pkg.jenkins.io/debian binary/"
         state: present
 
     - name: Update package cache for Jenkins repository
@@ -34,10 +38,10 @@
         state: present
 
     - name: Display content of initialAdminPassword file
-      ansible.builtin.shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+      ansible.builtin.slurp:
+        src: /var/lib/jenkins/secrets/initialAdminPassword
       register: admin_password
-      changed_when: false
 
     - name: Show the access text
       ansible.builtin.debug:
-        var: admin_password.stdout_lines
+        var: admin_password.content | b64decode

@@ -11,10 +11,14 @@
   pre_tasks:
     - name: Create PostgreSQL repository configuration
       ansible.builtin.shell: |
-        echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+        echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+          > /etc/apt/sources.list.d/pgdg.list
 
     - name: Import the repository signing key
-      ansible.builtin.shell: wget --quiet -O - "{{ postgresql_repo_key_url }}" | apt-key add -
+      ansible.builtin.get_url:
+        url: "{{ postgresql_repo_key_url }}"
+        dest: /usr/share/keyrings/postgresql-archive-keyring.gpg
+        mode: '0644'
 
     - name: Update package lists
       ansible.builtin.apt:
