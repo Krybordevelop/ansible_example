@@ -1,0 +1,32 @@
+# Ansible
+*.pyc
+__pycache__/
+.ansible/
+.cache/
+ansible.log
+
+# Molecule
+.molecule/
+instances/
+.vagrant/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+
+# OS
+*.log
+.DS_Store
+Thumbs.db
