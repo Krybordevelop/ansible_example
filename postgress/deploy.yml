@@ -10,42 +10,44 @@
 
   pre_tasks:
     - name: Create PostgreSQL repository configuration
-      shell: |
+      ansible.builtin.shell: |
         echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
     - name: Import the repository signing key
-      shell: wget --quiet -O - "{{ postgresql_repo_key_url }}" | apt-key add -
+      ansible.builtin.shell: wget --quiet -O - "{{ postgresql_repo_key_url }}" | apt-key add -
 
     - name: Update package lists
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
 
     - name: Install the "{{ postgresql_package_name }}"
-      apt:
+      ansible.builtin.apt:
         name:
           - "{{ postgresql_package_name }}"
         update_cache: yes
 
     - name: Import main config
-      template:
+      ansible.builtin.template:
         src: templates/postgresql.conf.j2
         dest: "/etc/postgresql/{{ postgresql_package_version }}/main/postgresql.conf"
+        mode: '0644'
       notify: Restart PostgreSQL service
 
     - name: Import pg_hba config
-      template:
+      ansible.builtin.template:
         src: templates/pg_hba.conf.j2
         dest: "/etc/postgresql/{{ postgresql_package_version }}/main/pg_hba.conf"
+        mode: '0644'
       notify: Restart PostgreSQL service
 
   tasks:
     - name: Include Optional Role
       when: include_optional_role | lower == 'yes'
-      include_role:
+      ansible.builtin.include_role:
         name: create_user_and_db
 
   handlers:
     - name: Restart PostgreSQL service
-      systemd:
+      ansible.builtin.systemd:
         name: postgresql
         state: restarted

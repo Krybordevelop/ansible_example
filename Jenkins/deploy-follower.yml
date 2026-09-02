@@ -5,11 +5,11 @@
 
   tasks:
     - name: Update package cache
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
 
     - name: Install fontconfig and OpenJDK 17 JRE
-      apt:
+      ansible.builtin.apt:
         name:
           - ca-certificates
           - wget
@@ -20,19 +20,20 @@
         state: present
 
     - name: Create keyrings directory
-      file:
+      ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
+        mode: '0755'
 
     - name: Download and install Docker GPG key
-      shell: |
+      ansible.builtin.shell: |
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
           sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
       args:
         creates: /etc/apt/keyrings/docker.gpg
 
     - name: Create Docker repository configuration
-      shell: |
+      ansible.builtin.shell: |
         echo "deb [arch=$(dpkg --print-architecture) \
           signed-by=/etc/apt/keyrings/docker.gpg] \
           https://download.docker.com/linux/ubuntu \
@@ -40,12 +41,12 @@
           sudo tee /etc/apt/sources.list.d/docker.list
 
     - name: Update package cache for Docker repository
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
         force_apt_get: yes
 
     - name: Install Docker
-      apt:
+      ansible.builtin.apt:
         name:
           - docker-ce
           - docker-ce-cli
@@ -53,12 +54,12 @@
         state: present
 
     - name: Create Jenkins group
-      group:
+      ansible.builtin.group:
         name: jenkins
         state: present
 
     - name: Create Jenkins user
-      user:
+      ansible.builtin.user:
         name: jenkins
         group: jenkins
         home: /home/jenkins
@@ -66,13 +67,13 @@
         state: present
 
     - name: Add Jenkins to the docker group
-      user:
+      ansible.builtin.user:
         name: jenkins
         groups: docker
         append: yes
 
     - name: Add Jenkins to the sudo group
-      user:
+      ansible.builtin.user:
         name: jenkins
         groups: sudo
         append: yes

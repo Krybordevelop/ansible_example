@@ -5,21 +5,21 @@
 
   tasks:
     - name: Update server
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
         upgrade: dist
 
     - name: Install WireGuard
-      apt:
+      ansible.builtin.apt:
         name: wireguard
         state: present
 
     - name: Generate key
-      shell:
+      ansible.builtin.shell:
         cmd: "wg genkey | tee /etc/wireguard/privatekey | wg pubkey | tee /etc/wireguard/publickey"
         creates: /etc/wireguard/privatekey
 
     - name: Set permissions for private key
-      file:
+      ansible.builtin.file:
         path: /etc/wireguard/privatekey
         mode: '0600'

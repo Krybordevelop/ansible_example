@@ -5,38 +5,39 @@
 
   tasks:
     - name: Update package cache
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
 
     - name: Install fontconfig and OpenJDK 17 JRE
-      apt:
+      ansible.builtin.apt:
         name:
           - fontconfig
           - openjdk-17-jre
         state: present
 
     - name: Download Jenkins GPG key
-      shell: wget -O /usr/share/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian/jenkins.io-2023.key
+      ansible.builtin.shell: wget -O /usr/share/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian/jenkins.io-2023.key
 
     - name: Add Jenkins repository
-      apt_repository:
+      ansible.builtin.apt_repository:
         repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/"
         state: present
 
     - name: Update package cache for Jenkins repository
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
         force_apt_get: yes
 
     - name: Install Jenkins
-      apt:
+      ansible.builtin.apt:
         name: jenkins
         state: present
 
     - name: Display content of initialAdminPassword file
-      shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+      ansible.builtin.shell: cat /var/lib/jenkins/secrets/initialAdminPassword
       register: admin_password
+      changed_when: false
 
     - name: Show the access text
-      debug:
+      ansible.builtin.debug:
         var: admin_password.stdout_lines
