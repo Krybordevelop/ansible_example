@@ -10,7 +10,3 @@ exclude_paths:
 skip_list:
   - run-shell-default
   - command-instead-of-module
-
-rules:
-  line-length:
-    max: 120
