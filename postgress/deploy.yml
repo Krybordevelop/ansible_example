@@ -2,51 +2,56 @@
 - name: Configure and install PostgreSQL
   hosts: all
   become: true
-  
+
   vars_prompt:
     - name: include_optional_role
       prompt: "Do you want to include the optional role? (yes/no)"
-      private: no  # If you set this to yes, the input will not be echoe
+      private: no
 
   pre_tasks:
     - name: Create PostgreSQL repository configuration
-      shell: echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+      ansible.builtin.shell: |
+        echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+          > /etc/apt/sources.list.d/pgdg.list
 
     - name: Import the repository signing key
-      shell: wget --quiet -O - "{{ postgresql_repo_key_url }}" | apt-key add -
+      ansible.builtin.get_url:
+        url: "{{ postgresql_repo_key_url }}"
+        dest: /usr/share/keyrings/postgresql-archive-keyring.gpg
+        mode: '0644'
 
     - name: Update package lists
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
 
     - name: Install the "{{ postgresql_package_name }}"
-      apt:
+      ansible.builtin.apt:
         name:
-        - "{{ postgresql_package_name }}"
+          - "{{ postgresql_package_name }}"
         update_cache: yes
 
-    - name: import main config
-      template:
+    - name: Import main config
+      ansible.builtin.template:
         src: templates/postgresql.conf.j2
         dest: "/etc/postgresql/{{ postgresql_package_version }}/main/postgresql.conf"
+        mode: '0644'
       notify: Restart PostgreSQL service
 
-    - name: import pg_hba config
-      template:
+    - name: Import pg_hba config
+      ansible.builtin.template:
         src: templates/pg_hba.conf.j2
         dest: "/etc/postgresql/{{ postgresql_package_version }}/main/pg_hba.conf"
+        mode: '0644'
       notify: Restart PostgreSQL service
 
   tasks:
     - name: Include Optional Role
-      when: include_optional_role|lower == 'yes'
-      include_role:
+      when: include_optional_role | lower == 'yes'
+      ansible.builtin.include_role:
         name: create_user_and_db
 
   handlers:
     - name: Restart PostgreSQL service
-      systemd:
+      ansible.builtin.systemd:
         name: postgresql
         state: restarted
-
-

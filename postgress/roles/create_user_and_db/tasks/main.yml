@@ -1,22 +1,21 @@
 ---
-
 - name: Install python3-pip and python3-psycopg2 module
-  apt:
+  ansible.builtin.apt:
     name:
-    - python3-pip
-    - python3-psycopg2
+      - python3-pip
+      - python3-psycopg2
     update_cache: yes
 
 - name: Install psycopg2-binary using pip
-  pip:
+  ansible.builtin.pip:
     name: psycopg2-binary
     state: present
-    executable: pip3 
+    executable: pip3
 
 - name: Create PostgreSQL User "{{ postgres_user }}"
   become: true
   become_user: postgres
-  postgresql_user:
+  community.postgresql.postgresql_user:
     name: "{{ postgres_user }}"
     password: "{{ postgres_password }}"
     encrypted: yes
@@ -25,7 +24,7 @@
 - name: Create PostgreSQL Database "{{ postgres_db }}"
   become: true
   become_user: postgres
-  postgresql_db:
+  community.postgresql.postgresql_db:
     name: "{{ postgres_db }}"
     owner: "{{ postgres_user }}"
     encoding: "{{ postgres_encoding }}"
@@ -34,9 +33,9 @@
 - name: Grant Permissions to PostgreSQL User on Database
   become: true
   become_user: postgres
-  postgresql_privs:
+  community.postgresql.postgresql_privs:
     database: "{{ postgres_db }}"
     roles: "{{ postgres_user }}"
-    type: database 
+    type: database
     privs: ALL
     state: present

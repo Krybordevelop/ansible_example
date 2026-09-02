@@ -1,0 +1,15 @@
+---
+# Ansible Lint Configuration
+# See https://ansible.readthedocs.io/projects/lint/configuring/
+
+exclude_paths:
+  - .git/
+  - .github/
+  - test/
+
+skip_list:
+  - var-naming  # Skip role variable naming convention for examples
+  - risky-shell-pipe  # Allow pipes in shell commands for examples
+  - no-changed-when  # Skip idempotency checks for examples
+  - risky-file-permissions  # Skip file permission checks for examples
+  - command-instead-of-shell  # Allow command/shell choice for examples

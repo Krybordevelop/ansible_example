@@ -1,0 +1,50 @@
+---
+name: Ansible Validation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Ansible Playbooks
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible ansible-lint yamllint
+
+      - name: Run yamllint
+        run: |
+          yamllint -d '{extends: relaxed, rules: {line-length: {max: 120}}}' .
+
+      - name: Run ansible-lint
+        run: ansible-lint
+
+      - name: Validate Ansible playbook syntax
+        run: |
+          find . -path ./venv -prune -o -path ./.git -prune -o \
+            -name 'deploy*.yml' -o -name 'deploy*.yaml' | \
+            grep -v ".github" | while read -r file; do
+            if [ -f "$file" ]; then
+              echo "Validating $file"
+              ansible-playbook --syntax-check "$file" || exit 1
+            fi
+          done
