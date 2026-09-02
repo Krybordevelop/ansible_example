@@ -32,18 +32,15 @@ jobs:
           pip install ansible ansible-lint yamllint
 
       - name: Run yamllint
-        run: yamllint -d "{extends: relaxed, rules: {line-length: {max: 120}}}" .
-        continue-on-error: false
+        run: |
+          yamllint -d '{extends: relaxed, rules: {line-length: {max: 120}}}' .
 
       - name: Run ansible-lint
         run: ansible-lint
-        continue-on-error: false
 
       - name: Validate Ansible syntax
         run: |
-          find . -name '*.yml' -o -name '*.yaml' | grep -E '(playbooks|roles|tasks)' | while read -r file; do
-            if [[ "$file" != ./.github/* ]]; then
-              echo "Validating $file"
-              ansible-playbook --syntax-check "$file" || exit 1
-            fi
+          find . -name '*.yml' -o -name '*.yaml' | grep -v .github | while read -r file; do
+            echo "Validating $file"
+            ansible-playbook --syntax-check "$file" || exit 1
           done
