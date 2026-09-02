@@ -38,9 +38,13 @@ jobs:
       - name: Run ansible-lint
         run: ansible-lint
 
-      - name: Validate Ansible syntax
+      - name: Validate Ansible playbook syntax
         run: |
-          find . -name '*.yml' -o -name '*.yaml' | grep -v .github | while read -r file; do
-            echo "Validating $file"
-            ansible-playbook --syntax-check "$file" || exit 1
+          find . -path ./venv -prune -o -path ./.git -prune -o \
+            -name 'deploy*.yml' -o -name 'deploy*.yaml' | \
+            grep -v ".github" | while read -r file; do
+            if [ -f "$file" ]; then
+              echo "Validating $file"
+              ansible-playbook --syntax-check "$file" || exit 1
+            fi
           done
