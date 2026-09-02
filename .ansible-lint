@@ -1,0 +1,32 @@
+---
+# See https://ansible.readthedocs.io/projects/lint/configuring/
+
+# Exclude certain paths
+exclude_paths:
+  - .git/
+  - .github/
+  - /test/
+  - /molecule/
+
+# Parseable output
+parseable: true
+quiet: false
+verbosity: 1
+
+# Enable all rules
+enablelist:
+  - name[missing]
+  - name[play-name]
+  - name[casing]
+  - name[template]
+
+# Disable specific rules (optional)
+skip_list:
+  - 'run-shell-default'  # Allow shell without executable specified
+  - 'command-instead-of-module'  # Allow shell commands in some cases
+
+# Custom rules configuration
+rules:
+  name:
+    casing: lower
+    template: '{name}'
