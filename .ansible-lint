@@ -14,5 +14,3 @@ skip_list:
 rules:
   line-length:
     max: 120
-  name:
-    casing: lower
