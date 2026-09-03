@@ -1,0 +1,45 @@
+---
+- name: Configure Squid Proxy Server (base settings)
+  hosts: all
+  become: true
+  vars_files:
+    - vars/squid_vars.yml
+  tasks:
+    - name: Install Squid proxy server
+      ansible.builtin.apt:
+        name: squid
+        state: present
+        update_cache: true
+
+    - name: Install Apache utils for htpasswd
+      ansible.builtin.apt:
+        name: apache2-utils
+        state: present
+
+    - name: Create Squid authentication file
+      ansible.builtin.command: htpasswd -b -c {{ squid_auth_path }} {{ auth_user }} {{ auth_password }}
+      args:
+        creates: "{{ squid_auth_path }}"
+
+    - name: Backup original squid.conf
+      ansible.builtin.copy:
+        src: "{{ squid_conf_path }}"
+        dest: "{{ squid_conf_path }}.bak"
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Deploy custom squid.conf
+      ansible.builtin.template:
+        src: templates/squid.conf.j2
+        dest: /etc/squid/squid.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart Squid service
+      ansible.builtin.service:
+        name: squid
+        state: restarted
+        enabled: true
