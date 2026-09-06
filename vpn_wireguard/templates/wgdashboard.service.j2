@@ -1,0 +1,14 @@
+[Unit]
+Description=WGDashboard Service
+After=network.target
+
+[Service]
+Type=forking
+WorkingDirectory={{ wg_dashboard_dir }}/src
+ExecStart={{ wg_dashboard_dir }}/src/wgd.sh start
+ExecStop={{ wg_dashboard_dir }}/src/wgd.sh stop
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target
