@@ -64,7 +64,9 @@
 
     - name: Confirm installation success
       ansible.builtin.debug:
-        msg: "WGDashboard successfully started! Open http://{{ ansible_host }}:{{ wg_dashboard_port }} for the initial setup."
+        msg: >
+          WGDashboard successfully started!
+          Open http://{{ ansible_host }}:{{ wg_dashboard_port }} for setup.
       when: wgd_status.status.ActiveState == "active"
 
   handlers:
