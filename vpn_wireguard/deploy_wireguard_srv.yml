@@ -68,8 +68,8 @@
       when: wgd_status.status.ActiveState == "active"
 
   handlers:
-      - name: Restart wgdashboard
-        ansible.builtin.systemd:
-          name: wgdashboard
-          state: restarted
-          daemon_reload: true
+    - name: Restart wgdashboard
+      ansible.builtin.systemd:
+        name: wgdashboard
+        state: restarted
+        daemon_reload: true
