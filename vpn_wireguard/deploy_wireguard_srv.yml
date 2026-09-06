@@ -49,32 +49,12 @@
         path: "{{ wg_dashboard_dir }}/src/wgd.sh"
         mode: '0755'
 
-    - name: Create Systemd service for WGDashboard
-      ansible.builtin.copy:
+    - name: Create Systemd service for WGDashboard from template
+      ansible.builtin.template:
+        src: wgdashboard.service.j2
         dest: /etc/systemd/system/wgdashboard.service
-        content: |
-          [Unit]
-          Description=WGDashboard Service
-          After=network.target
-
-          [Service]
-          Type=forking
-          WorkingDirectory={{ wg_dashboard_dir }}/src
-          ExecStart={{ wg_dashboard_dir }}/src/wgd.sh start
-          ExecStop={{ wg_dashboard_dir }}/src/wgd.sh stop
-          Restart=on-failure
-          User=root
-
-          [Install]
-          WantedBy=multi-user.target
         mode: '0644'
-
-    - name: Reload systemd, enable and start WGDashboard service
-      ansible.builtin.systemd:
-        name: wgdashboard
-        daemon_reload: true
-        enabled: true
-        state: started
+      notify: Restart wgdashboard
 
   post_tasks:
     - name: Verify WGDashboard service status
@@ -84,5 +64,12 @@
 
     - name: Confirm installation success
       ansible.builtin.debug:
-        msg: "WGDashboard successfully started! Open http://<IP_СЕРВЕРА>:{{ wg_dashboard_port }} for the initial setup."
+        msg: "WGDashboard successfully started! Open http://{{ ansible_host }}:{{ wg_dashboard_port }} for the initial setup."
       when: wgd_status.status.ActiveState == "active"
+
+  handlers:
+      - name: Restart wgdashboard
+        ansible.builtin.systemd:
+          name: wgdashboard
+          state: restarted
+          daemon_reload: true
