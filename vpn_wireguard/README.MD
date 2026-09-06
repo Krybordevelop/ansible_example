@@ -20,6 +20,7 @@ By default, WGDashboard is available on port `10086`.
 - `deploy_wireguard_srv.yml` — main Ansible playbook;
 - `hosts.ini` — inventory file for the target server;
 - `README.MD` — project description.
+- `templates/wgdashboard.service.j2` — templete for  Systemd service
 
 ## Requirements
 
