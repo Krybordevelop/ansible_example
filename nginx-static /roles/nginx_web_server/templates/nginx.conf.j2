@@ -27,6 +27,11 @@ http {
         root {{ nginx_web_root }};
 
         index index.html index.htm;
+        error_page 404 /404.html;
+
+        location = /404.html {
+            internal;
+        }
 
         location / {
             try_files $uri $uri/ =404;

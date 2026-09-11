@@ -30,6 +30,14 @@
     group: "{{ nginx_group }}"
     mode: "0644"
 
+- name: Deploy custom error page
+  ansible.builtin.template:
+    src: 404.html.j2
+    dest: "{{ nginx_web_root }}/404.html"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_group }}"
+    mode: "0644"
+
 - name: Enable and start Nginx service
   ansible.builtin.service:
     name: "{{ nginx_service_name }}"
