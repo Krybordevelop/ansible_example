@@ -55,11 +55,11 @@
     remote_src: true
     owner: root
     group: root
-    creates: "{{ prometheus_install_dir }}/prometheus-{{ prometheus_version }}.linux-{{ prometheus_architecture }}/prometheus"
+    creates: "{{ prometheus_release_dir }}/prometheus"
 
 - name: Install Prometheus binaries
   ansible.builtin.copy:
-    src: "{{ prometheus_install_dir }}/prometheus-{{ prometheus_version }}.linux-{{ prometheus_architecture }}/{{ item }}"
+    src: "{{ prometheus_release_dir }}/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
     remote_src: true
     owner: root
@@ -72,7 +72,7 @@
 
 - name: Install Prometheus console files
   ansible.builtin.copy:
-    src: "{{ prometheus_install_dir }}/prometheus-{{ prometheus_version }}.linux-{{ prometheus_architecture }}/{{ item }}/"
+    src: "{{ prometheus_release_dir }}/{{ item }}/"
     dest: "{{ prometheus_install_dir }}/{{ item }}/"
     remote_src: true
     owner: root
