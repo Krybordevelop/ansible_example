@@ -1,0 +1,17 @@
+---
+nginx_package_name: nginx
+nginx_service_name: nginx
+nginx_user: www-data
+nginx_group: www-data
+nginx_config_path: /etc/nginx/nginx.conf
+nginx_web_root: /var/www/html
+nginx_server_name: _
+nginx_listen_port: 80
+nginx_worker_processes: auto
+nginx_worker_connections: 1024
+nginx_keepalive_timeout: 65
+nginx_client_max_body_size: 16m
+nginx_index_title: Ansible Nginx Web Server
+nginx_index_message: Nginx was deployed by Ansible.
+nginx_error_title: Page not found
+nginx_error_message: The requested page could not be found.
