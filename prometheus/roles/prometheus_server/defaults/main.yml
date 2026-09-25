@@ -1,0 +1,30 @@
+---
+prometheus_version: 2.53.5
+prometheus_download_base_url: https://github.com/prometheus/prometheus/releases/download
+prometheus_architecture: >-
+  {{ {'x86_64': 'amd64', 'aarch64': 'arm64'}.get(ansible_facts.architecture, ansible_facts.architecture) }}
+prometheus_release_tag: "v{{ prometheus_version }}"
+prometheus_archive_name: "prometheus-{{ prometheus_version }}.linux-{{ prometheus_architecture }}"
+prometheus_archive_file: "{{ prometheus_archive_name }}.tar.gz"
+prometheus_release_dir: "{{ prometheus_install_dir }}/{{ prometheus_archive_name }}"
+prometheus_download_url: "{{ prometheus_download_base_url }}/{{ prometheus_release_tag }}/{{ prometheus_archive_file }}"
+prometheus_checksum: ""
+
+prometheus_user: prometheus
+prometheus_group: prometheus
+prometheus_home: /var/lib/prometheus
+prometheus_config_dir: /etc/prometheus
+prometheus_data_dir: /var/lib/prometheus/data
+prometheus_config_path: /etc/prometheus/prometheus.yml
+prometheus_install_dir: /opt/prometheus
+prometheus_binary_path: /usr/local/bin/prometheus
+prometheus_consoles_dir: /opt/prometheus/consoles
+prometheus_console_libraries_dir: /opt/prometheus/console_libraries
+prometheus_service_name: prometheus
+prometheus_listen_address: 0.0.0.0:9090
+
+prometheus_scrape_interval: 15s
+prometheus_evaluation_interval: 15s
+prometheus_firewall_allowed_sources:
+  - 0.0.0.0/0
+prometheus_ssh_port: 22
