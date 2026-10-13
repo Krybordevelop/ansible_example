@@ -1,0 +1,16 @@
+[Unit]
+Description=Patroni PostgreSQL HA service
+After=network-online.target etcd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=postgres
+Group=postgres
+ExecStart={{ patroni_venv }}/bin/patroni /etc/patroni/patroni.yml
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=1024
+
+[Install]
+WantedBy=multi-user.target

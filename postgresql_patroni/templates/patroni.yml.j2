@@ -1,0 +1,61 @@
+scope: {{ postgres_cluster_name }}
+namespace: /service/
+name: {{ inventory_hostname }}
+
+restapi:
+  listen: 0.0.0.0:{{ patroni_rest_port }}
+  connect_address: {{ node_ip }}:{{ patroni_rest_port }}
+
+etcd3:
+  hosts: [{% for host in groups['postgres_cluster'] %}'{{ hostvars[host].node_ip }}:{{ etcd_client_port }}'{% if not loop.last %}, {% endif %}{% endfor %}]
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        wal_level: replica
+        hot_standby: "on"
+        max_wal_senders: 10
+        max_replication_slots: 10
+        wal_keep_size: 256MB
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+  users:
+    admin:
+      password: "{{ postgres_superuser_password }}"
+      options:
+        - createrole
+        - createdb
+
+postgresql:
+  listen: 0.0.0.0:{{ postgresql_port }}
+  connect_address: {{ node_ip }}:{{ postgresql_port }}
+  data_dir: {{ postgresql_data_dir }}
+  bin_dir: /usr/lib/postgresql/{{ postgresql_version }}/bin
+  pgpass: /var/lib/postgresql/.pgpass
+  authentication:
+    superuser:
+      username: {{ postgres_superuser }}
+      password: "{{ postgres_superuser_password }}"
+    replication:
+      username: {{ postgres_replication_user }}
+      password: "{{ postgres_replication_password }}"
+  parameters:
+    unix_socket_directories: '/var/run/postgresql'
+  pg_hba:
+    - local all all trust
+    - host replication {{ postgres_replication_user }} 0.0.0.0/0 scram-sha-256
+    - host all all 0.0.0.0/0 scram-sha-256
+
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false

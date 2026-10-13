@@ -1,0 +1,141 @@
+---
+- name: Deploy PostgreSQL, etcd, Patroni and HAProxy
+  hosts: postgres_cluster
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Validate supported operating system
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.os_family == "Debian"
+          - ansible_facts.distribution_major_version | int >= 22
+        fail_msg: "This playbook supports Ubuntu 22.04+ and Debian-family systems."
+
+    - name: Install base packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - etcd
+          - haproxy
+          - python3-pip
+          - python3-venv
+          - python3-psycopg2
+        state: present
+        update_cache: true
+
+    - name: Add PostgreSQL repository signing key
+      ansible.builtin.get_url:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        dest: /usr/share/keyrings/postgresql-archive-keyring.asc
+        mode: "0644"
+
+    - name: Configure PostgreSQL repository
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.asc]
+          http://apt.postgresql.org/pub/repos/apt {{ ansible_facts.distribution_release }}-pgdg main
+        filename: pgdg
+        state: present
+
+    - name: Install PostgreSQL
+      ansible.builtin.apt:
+        name:
+          - "postgresql-{{ postgresql_version }}"
+          - "postgresql-client-{{ postgresql_version }}"
+        state: present
+        update_cache: true
+
+  tasks:
+    - name: Stop the distro-managed PostgreSQL cluster
+      ansible.builtin.systemd:
+        name: "postgresql@{{ postgresql_version }}-main"
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    - name: Configure etcd cluster
+      ansible.builtin.template:
+        src: templates/etcd.yml.j2
+        dest: /etc/default/etcd
+        mode: "0644"
+      notify: Restart etcd
+
+    - name: Ensure etcd is enabled
+      ansible.builtin.systemd:
+        name: etcd
+        enabled: true
+        state: started
+
+    - name: Install Patroni in a dedicated virtual environment
+      ansible.builtin.pip:
+        name:
+          - "patroni[etcd3]=={{ patroni_version }}"
+          - psycopg[binary]
+        virtualenv: "{{ patroni_venv }}"
+        virtualenv_command: python3 -m venv
+        state: present
+
+    - name: Create Patroni configuration directory
+      ansible.builtin.file:
+        path: /etc/patroni
+        state: directory
+        owner: postgres
+        group: postgres
+        mode: "0750"
+
+    - name: Configure Patroni
+      ansible.builtin.template:
+        src: templates/patroni.yml.j2
+        dest: /etc/patroni/patroni.yml
+        owner: postgres
+        group: postgres
+        mode: "0640"
+      notify: Restart Patroni
+
+    - name: Install Patroni systemd unit
+      ansible.builtin.template:
+        src: templates/patroni.service.j2
+        dest: /etc/systemd/system/patroni.service
+        mode: "0644"
+      notify:
+        - Reload systemd
+        - Restart Patroni
+
+    - name: Configure HAProxy
+      ansible.builtin.template:
+        src: templates/haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        mode: "0644"
+      notify: Restart HAProxy
+
+    - name: Enable Patroni and HAProxy
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - patroni
+        - haproxy
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Restart etcd
+      ansible.builtin.systemd:
+        name: etcd
+        state: restarted
+
+    - name: Restart Patroni
+      ansible.builtin.systemd:
+        name: patroni
+        state: restarted
+
+    - name: Restart HAProxy
+      ansible.builtin.systemd:
+        name: haproxy
+        state: restarted

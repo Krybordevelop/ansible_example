@@ -1,0 +1,35 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    maxconn 4096
+
+defaults
+    log global
+    mode tcp
+    option tcplog
+    timeout connect 5s
+    timeout client 30s
+    timeout server 30s
+
+frontend postgres_write
+    bind *:{{ haproxy_write_port }}
+    default_backend postgres_primary
+
+backend postgres_primary
+    option httpchk GET /primary
+    http-check expect status 200
+{% for host in groups['postgres_cluster'] %}
+    server {{ host }} {{ hostvars[host].node_ip }}:{{ postgresql_port }} check port {{ patroni_rest_port }} inter 2s fall 3 rise 2
+{% endfor %}
+
+frontend postgres_read
+    bind *:{{ haproxy_read_port }}
+    default_backend postgres_replicas
+
+backend postgres_replicas
+    balance roundrobin
+    option httpchk GET /replica
+    http-check expect status 200
+{% for host in groups['postgres_cluster'] %}
+    server {{ host }} {{ hostvars[host].node_ip }}:{{ postgresql_port }} check port {{ patroni_rest_port }} inter 2s fall 3 rise 2
+{% endfor %}

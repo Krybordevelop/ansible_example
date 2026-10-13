@@ -1,0 +1,21 @@
+---
+postgresql_version: "16"
+patroni_version: "4.0.6"
+patroni_venv: /opt/patroni-venv
+
+postgres_cluster_name: postgres-ha
+postgresql_port: 5432
+postgresql_data_dir: "/var/lib/postgresql/{{ postgresql_version }}/main"
+
+postgres_superuser: postgres
+postgres_replication_user: replicator
+postgres_replication_password: "change-me-replication"
+postgres_superuser_password: "change-me-superuser"
+
+patroni_rest_port: 8008
+etcd_client_port: 2379
+etcd_peer_port: 2380
+
+# HAProxy listens locally on every database node. PostgreSQL keeps its native 5432.
+haproxy_write_port: 5000
+haproxy_read_port: 5001
