@@ -3,3 +3,6 @@ squid_auth_path: /etc/squid/passwd
 proxy_port: 3128
 auth_user: proxyuser
 auth_password: proxypass
+squid_cache_dir: /var/spool/squid
+squid_cache_size_mb: 100
+squid_cache_mem: 256 MB

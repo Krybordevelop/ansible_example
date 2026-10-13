@@ -16,7 +16,7 @@ The project is intended for learning, practice, and testing automation workflows
   - includes user/database creation tasks and template-based configuration.
 
 - Squid server
-  - deployment of a proxy server with custom configuration;
+  - deployment of separate caching and non-caching proxy servers;
   - useful for caching and traffic filtering experiments.
 
 - WireGuard VPN
@@ -75,6 +75,20 @@ or for a specific example:
 ```bash
 ansible-playbook -i host.ini deploy-leader.yml
 ```
+
+For the Squid example, replace `cache-proxy.local` and `nocache-proxy.local`
+in `squid_server_nochache/host.ini` with the target hostnames or IP addresses,
+then run:
+
+```bash
+cd squid_server_nochache
+ansible-playbook -i host.ini deploy_squid.yml
+```
+
+Hosts in the `proxy_cache` group receive a disk and memory cache. Hosts in the
+`proxy_nocache` group receive a configuration with caching disabled. Both
+proxies listen on port 3128 by default; credentials are configured in
+`squid_server_nochache/vars/squid_vars.yml`.
 
 ## Purpose
 

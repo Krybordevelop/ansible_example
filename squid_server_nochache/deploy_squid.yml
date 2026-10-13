@@ -1,9 +1,11 @@
 ---
-- name: Configure Squid Proxy Server (base settings)
-  hosts: all
+- name: Configure Squid proxy servers
+  hosts: proxy_cache:proxy_nocache
   become: true
   vars_files:
     - vars/squid_vars.yml
+  vars:
+    squid_cache_enabled: "{{ 'proxy_cache' in group_names }}"
   tasks:
     - name: Install Squid proxy server
       ansible.builtin.apt:
@@ -29,17 +31,32 @@
         owner: root
         group: root
         mode: '0644'
+        force: false
 
     - name: Deploy custom squid.conf
       ansible.builtin.template:
         src: templates/squid.conf.j2
-        dest: /etc/squid/squid.conf
+        dest: "{{ squid_conf_path }}"
         owner: root
         group: root
         mode: '0644'
+      notify: Restart Squid service
 
+    - name: Initialize Squid cache directory
+      ansible.builtin.command:
+        cmd: "squid -z -f {{ squid_conf_path }}"
+      args:
+        creates: "{{ squid_cache_dir }}/00"
+      when: squid_cache_enabled
+
+    - name: Ensure Squid service is enabled and running
+      ansible.builtin.service:
+        name: squid
+        state: started
+        enabled: true
+
+  handlers:
     - name: Restart Squid service
       ansible.builtin.service:
         name: squid
         state: restarted
-        enabled: true
